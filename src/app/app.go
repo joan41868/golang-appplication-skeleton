@@ -1,8 +1,12 @@
 package app
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/joan41868/go-app-skeleton/src/model"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/joan41868/go-app-skeleton/src/repository"
@@ -11,8 +15,9 @@ import (
 )
 
 type Application struct {
-	repository *repository.Repository
+	repository repository.Repository
 	server     *server.Server
+	logger     *log.Logger
 
 	servicesWg *sync.WaitGroup
 }
@@ -26,6 +31,7 @@ func NewApp() *Application {
 		server:     server.NewServer(),
 		repository: nil,
 		servicesWg: new(sync.WaitGroup),
+		logger:     log.New(os.Stdout, fmt.Sprintf("[%s]", os.Getenv("APP_NAME")), 0),
 	}
 
 	return app
@@ -36,6 +42,20 @@ func (app *Application) Setup() {
 	// example:
 	app.server.AddRoute("/hello", "GET", func(wr http.ResponseWriter, r *http.Request) {
 		wr.Write([]byte("Hello world!"))
+	})
+
+	// example 2:
+	app.server.AddRoute("/user", "POST", func(wr http.ResponseWriter, r *http.Request) {
+		var usr model.Entity
+		err := json.NewDecoder(r.Body).Decode(&usr)
+		if err != nil {
+			app.logger.Println(err)
+		}
+		saved, err := app.repository.Create(&usr)
+		if err != nil {
+			app.logger.Println(err)
+		}
+		json.NewEncoder(wr).Encode(saved)
 	})
 }
 

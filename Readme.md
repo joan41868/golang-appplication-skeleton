@@ -15,6 +15,7 @@ The template is suitable for many types of web projects.
 - [ ] Service Layer
 - [ ] Security Layer
 - [ ] gRPC Server
+- [ ] Testing
 
 ### What other packages are present here:
 - `gorilla/mux` - the fancy router
